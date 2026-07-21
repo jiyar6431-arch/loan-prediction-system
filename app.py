@@ -1,30 +1,54 @@
-# app.py
-
-# --- CHANGED BLOCK START ---
-import gradio as gr
+from flask import Flask, render_template, request
 import joblib
-import spaces
+import numpy as np
 
-# We load the model once when the app starts
-deployed_lr = joblib.load('my_first_ml_model.pkl')
+app = Flask(__name__)
 
-# --- ZERO-GPU DECORATOR AND PREDICTION LOGIC ---
-@spaces.GPU
-def predict_rent(size_of_prop):
-    # The model expects a 2D array: [[size]]
-    prediction = deployed_lr.predict([[size_of_prop]])
-    # Extract the single prediction value and format it
-    return f"Estimated Rent: {prediction[0]:.2f}"
+# Load model
+model = joblib.load("loan_prediction_model.pkl")
 
-# Create the web interface
-interface = gr.Interface(
-    fn=predict_rent,
-    inputs=gr.Number(label="Please Enter the Size of Your Property for rent"),
-    outputs=gr.Text(label="Predicted Rent"),
-    title="Property Rent Predictor",
-    description="Enter the property size to get a rent estimate powered by Machine Learning."
-)
+
+@app.route("/")
+def home():
+    return render_template("index.html")
+
+
+@app.route("/predict", methods=["POST"])
+def predict():
+    try:
+        no_of_dependents = float(request.form["no_of_dependents"])
+        income_annum = float(request.form["income_annum"])
+        loan_amount = float(request.form["loan_amount"])
+        loan_term = float(request.form["loan_term"])
+        cibil_score = float(request.form["cibil_score"])
+        residential_assets_value = float(request.form["residential_assets_value"])
+        commercial_assets_value = float(request.form["commercial_assets_value"])
+        luxury_assets_value = float(request.form["luxury_assets_value"])
+        bank_asset_value = float(request.form["bank_asset_value"])
+
+        features = np.array([[no_of_dependents,
+                              income_annum,
+                              loan_amount,
+                              loan_term,
+                              cibil_score,
+                              residential_assets_value,
+                              commercial_assets_value,
+                              luxury_assets_value,
+                              bank_asset_value]])
+
+        prediction = model.predict(features)[0]
+
+        if prediction == 1:
+            result = "Loan Approved ✅"
+        else:
+            result = "Loan Rejected ❌"
+
+        return render_template("index.html", prediction_text=result)
+
+    except Exception as e:
+        return render_template("index.html",
+                               prediction_text=f"Error: {e}")
+
 
 if __name__ == "__main__":
-    interface.launch()
-# --- CHANGED BLOCK END ---
+    app.run(debug=True)
