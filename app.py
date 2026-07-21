@@ -125,7 +125,7 @@ developer_info = """
 **Created by:** Jiya
 
 * **LinkedIn:** [Connect with me](YOUR_LINKEDIN_URL_HERE)
-* **GitHub:** [Check out my projects](YOUR_GITHUB_URL_HERE)
+* **GitHub:** [Check out my projects](https://github.com/jiyar6431-arch)
 * **Instagram:** [Follow me](YOUR_INSTAGRAM_URL_HERE)
 
 ---
